@@ -8,7 +8,9 @@ class TestController < ApplicationController
     logger.info 'Log!!!'
     render json: {
       current_logger: !!RrxLogging.current,
-      logger_class: Rails.logger.class.name
+      logger_class:   Rails.logger.class.name,
+      time_zone:      Rails.application.config.time_zone,
+      schema_format:  Rails.application.config.active_record.schema_format
     }
   end
 

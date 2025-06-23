@@ -25,7 +25,7 @@ After installing, initialize your project with `rrx_api_setup`. Note this will a
 perform development and test setup.
 
 ```shell
-$ rrx_api_setup
+$ rrx_api
 ```
 
 ## Usage

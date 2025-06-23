@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module RrxApi
-  VERSION = "0.1.0"
-  RAILS_VERSION = "~> 7.0"
+  VERSION = '8.0.2'
+  DEPENDENCY_VERSION = "~> #{VERSION}"
+  RAILS_VERSION = DEPENDENCY_VERSION
 end

@@ -2,6 +2,16 @@
 require 'rrx_logging/logger'
 
 describe RrxApi::Controller do
+  describe 'railtie' do
+    it 'should set application config' do
+      get '/test'
+      expect(json_response).to include(
+                                 time_zone:     'utc',
+                                 schema_format: 'sql'
+                               )
+    end
+  end
+
   describe 'logging' do
 
     it 'should set current logger' do

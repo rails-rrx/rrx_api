@@ -1,0 +1,44 @@
+terraform {
+  required_version = "<%= terraform_version %>"
+
+  required_providers {
+    aws = {}
+  }
+
+<% if s3_bucket.present? %>
+  # Configure the backend to store the state file in S3
+  backend "s3" {
+    bucket  = "<%= s3_bucket %>"
+    key     = "<%= s3_key %>"
+  <% if aws_profile %>
+    profile = "<%= aws_profile %>"
+  <% end %>
+    region  = "<%= aws_region %>"
+    encrypt = true
+  }
+<% end %>
+}
+
+provider "aws" {
+<% if aws_profile %>
+  profile = "<%= aws_profile %>"
+<% end %>
+  region  = "<%= aws_region %>"
+  default_tags {
+    tags = module.tagging.default_tags
+  }
+}
+
+module "aws" {
+  source = "github.com/tfext/terraform-aws-base"
+}
+
+module "tagging" {
+  source       = "github.com/tfext/terraform-utilities-tagging"
+  environments = <%= environments? %>
+}
+
+locals {
+  app_name     = "<%= app_name %>"
+  app_env_name = "${local.app_name}${module.tagging.environment_suffix}"
+}

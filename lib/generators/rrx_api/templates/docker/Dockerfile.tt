@@ -1,0 +1,1 @@
+FROM ddrew555/rrx_docker:<%= ruby_version %>

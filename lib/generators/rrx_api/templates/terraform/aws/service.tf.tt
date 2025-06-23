@@ -1,0 +1,67 @@
+module "rrx_config" {
+  source = "github.com/tfext/terraform-rrx-config"
+  environment = terraform.workspace
+  # aws_secret  = "..."
+
+  db = {
+    resource_id = data.aws_db_instance.db.resource_id
+    type        = "mariadb"
+    host        = data.aws_db_instance.db.address
+    port        = data.aws_db_instance.db.port
+    name        = "liaisun"
+    user        = "liaisun_api"
+    iam         = true
+  }
+
+  config = {
+    default_identity_provider = {
+      user_pool_id = "us-west-2_Q8lbwSDZ3"
+      client_id    = "27j0fkk6jdnc8fdcf1psuechtd"
+      domain       = "auth-dev.liaisun.com"
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "service" {
+  name              = "/${module.tagging.environment}/<%= app_name %>"
+  retention_in_days = module.tagging.production ? 3 : 1
+}
+
+module "container_definition" {
+  source          = "github.com/tfext/terraform-aws-ecs-container-definition"
+  name            = local.app_env_name
+  repository      = module.ilibrium.docker_repository
+  image           = "<%= app_name %>"
+  image_tag       = "latest" # terraform.workspace
+  cpu             = 1
+  memory_required = 512
+  environment     = module.rrx_config.environment
+
+  ports = [{
+    port         = 3000
+    public_port  = 443
+    health_check = { path = "/healthcheck" }
+  }]
+
+  aws_logging = {
+    group = aws_cloudwatch_log_group.service.name
+  }
+}
+
+module "service" {
+  source              = "github.com/tfext/terraform-aws-ecs-service"
+  name                = local.app_env_name
+  cluster             = <%= ecs_cluster %>
+  containers          = [module.container_definition]
+  role_policy         = data.aws_iam_policy_document.app.json
+  target_group_prefix = "<%= app_name %>${module.tagging.environment_suffix}"
+  wait_for_stable     = false
+
+  load_balancers = [{
+    name          = module.tagging.environment
+    short_name    = module.tagging.short_env
+    dns_zone      = "liaisun.com"
+    dns_subdomain = "api${module.tagging.environment_suffix}"
+    vpc           = module.tagging.environment
+  }]
+}

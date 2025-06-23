@@ -1,0 +1,37 @@
+data "aws_iam_policy_document" "app_policy" {
+  source_policy_documents = [module.rrx_config.role_policy.json]
+
+  statement {
+    sid       = "webrtc"
+    resources = ["*"]
+    actions = [
+      "ivs:CreateStage",
+      "ivs:CreateParticipantToken",
+      "ivs:DeleteStage",
+      "ivs:DisconnectParticipant",
+      "ivs:GetStage",
+      "ivs:GetStageSession",
+      "ivs:ListStages",
+      "ivs:ListStageSessions",
+      "ivs:TagResource",
+      "cloudwatch:DescribeAlarms",
+      "cloudwatch:GetMetricData",
+      "servicequotas:ListAWSDefaultServiceQuotas",
+      "servicequotas:ListRequestedServiceQuotaChangeHistoryByQuota",
+      "servicequotas:ListServiceQuotas",
+      "servicequotas:ListServices",
+      "servicequotas:ListTagsForResource"
+    ]
+  }
+}
+
+resource "aws_iam_user" "app" {
+  name          = local.app_env_name
+  path          = "/${module.tagging.environment}/services/"
+  force_destroy = true
+}
+
+resource "aws_iam_user_policy" "api" {
+  user   = aws_iam_user.app.name
+  policy = data.aws_iam_policy_document.api.json
+}

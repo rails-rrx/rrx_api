@@ -7,12 +7,35 @@ require 'action_view/railtie'
 require 'jbuilder'
 require 'rack/cors'
 require 'actionpack/action_caching'
+require_relative 'auth/base'
+require_relative 'auth/firebase'
 
 module RrxApi
   class Engine < ::Rails::Engine
     CORS_LOCALHOST_PATTERN = /\Ahttp:\/\/localhost(?::\d{4})?\z/.freeze
 
     config.cors_origins = []
+
+    # Checks whether +source+ matches any of the configured CORS origins.
+    # Each entry in +cors_origins+ may be:
+    # - a String for exact match (e.g. "https://app.example.com")
+    # - a String with a leading wildcard (e.g. "*.example.com" matches "https://foo.example.com")
+    # - a Regexp (e.g. /\.example\.com\z/)
+    def self.cors_origin_allowed?(source, origins)
+      origins.any? do |origin|
+        case origin
+        when Regexp then origin.match?(source)
+        when String
+          if origin.start_with?('*.')
+            # Wildcard subdomain: *.example.com matches any scheme+subdomain of example.com
+            suffix = origin[1..]  # => ".example.com"
+            source.end_with?(suffix)
+          else
+            source == origin
+          end
+        end
+      end
+    end
     config.healthcheck = nil
     config.healthcheck_route = 'healthcheck'
 
@@ -40,7 +63,7 @@ module RrxApi
             if Rails.env.development?
               CORS_LOCALHOST_PATTERN.match? source
             else
-              app.config.cors_origins.include?(source)
+              Engine.cors_origin_allowed?(source, app.config.cors_origins)
             end
           end
 

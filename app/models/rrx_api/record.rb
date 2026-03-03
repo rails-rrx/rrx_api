@@ -4,6 +4,8 @@ module RrxApi
   class Record < ActiveRecord::Base
     self.abstract_class = true
 
+    include ArelQuery
+
     before_create :set_new_id
 
     # @return [RrxLogging::Logger]

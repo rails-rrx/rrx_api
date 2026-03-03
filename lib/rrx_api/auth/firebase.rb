@@ -19,8 +19,14 @@ module RrxApi
         require_firebase!
         verified = auth.verify_id_token(id_token)
         verified['sub']
-      rescue ::Firebase::Admin::Auth::ExpiredTokenError
-        raise TokenExpiredError
+      rescue LoadError
+        raise
+      rescue => e
+        # Lazily match the expired-token error so this file can be parsed before
+        # the firebase-admin-sdk gem is loaded.
+        raise TokenExpiredError if e.class.name == 'Firebase::Admin::Auth::ExpiredTokenError'
+
+        raise
       end
 
       def user_info(uid)

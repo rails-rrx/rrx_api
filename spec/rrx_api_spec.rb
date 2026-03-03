@@ -5,7 +5,7 @@ RSpec.describe RrxApi do
     expect(RrxApi::VERSION).not_to be nil
   end
 
-  it "does something useful" do
-    expect(false).to eq(true)
+  it 'exposes the gem version' do
+    expect(RrxApi::VERSION).to match(/\A\d+\.\d+\.\d+\z/)
   end
 end

@@ -94,16 +94,11 @@ describe RrxApi::Generators::InstallGenerator, type: :generator do
         end
         file 'application.rb'
         directory 'initializers' do
-          file 'cors.rb'
+          no_file 'cors.rb'
           no_file 'generators.rb'
         end
       end
 
-      directory 'docker' do
-        file 'Dockerfile' do
-          contains 'FROM ddrew555/rrx_docker:3.1'
-        end
-      end
 
       directory 'app' do
         directory 'controllers' do

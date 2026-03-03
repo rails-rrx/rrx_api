@@ -7,6 +7,8 @@ require 'action_view/railtie'
 require 'jbuilder'
 require 'rack/cors'
 require 'actionpack/action_caching'
+require_relative 'auth/base'
+require_relative 'auth/firebase'
 
 module RrxApi
   class Engine < ::Rails::Engine

@@ -3,6 +3,7 @@
 module RrxApi
   class Controller < ActionController::API
     include AbstractController::Helpers
+    include RrxApi::Authenticatable
 
     abstract!
 
